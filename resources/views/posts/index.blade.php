@@ -7,6 +7,11 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             {{-- create a new post --}}
+            @if (session('status'))
+                <div class="alert alert-success">
+                    {{ session('status') }}
+                </div>      
+            @endif
             <a class="btn button btn-info" href="/posts/create">Create New</a>
             <br><br>
             <div class="card">       
