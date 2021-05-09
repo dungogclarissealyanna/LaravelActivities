@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Post;
+use App\Models\Post;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
 {
@@ -13,6 +15,7 @@ class PostController extends Controller
     * and delete buttons are clicked */
     public function __construct() {
         $this->middleware('auth')->except(['index', 'show']);
+        //$this->middleware('auth')->except('index');
     }
 
     /**
@@ -23,9 +26,11 @@ class PostController extends Controller
     public function index()
     {
         //
-        $posts = Post::get();
-        
-        return view('posts.index', compact('posts'));
+        $user = User::find(Auth::id());
+        $posts = $user->posts()->where('title','!=','')->get();
+        $count = $user->posts()->where('title','!=','')->count();
+
+        return view('posts.index', compact('posts', 'count'));
     }
 
     /**
@@ -71,9 +76,10 @@ class PostController extends Controller
         }
 
         $post = new Post();
-        $post->title = $request->title;
-        $post->description = $request->description;
+        $post->fill($request->all());
         $post->img = $filenameToStore;
+        $post->user_id = auth()->user()->id;
+        $post->save();
 
 
          if ($post->save()){
@@ -90,12 +96,11 @@ class PostController extends Controller
      * @param  \App\Post  $post
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Post $post)
     {
-        //
-        $post = Post::find($id);
-        return view('posts.show', compact('post'));
-        
+        $post = Post::find($post->id);
+        $comments = $post->comments;
+        return view('posts.show', compact('post','comments'));
     }
 
     /**
